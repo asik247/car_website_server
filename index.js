@@ -15,10 +15,15 @@ async function run() {
         await client.connect();
         //Todo my db and db coll;
         const db = client.db('carWebsite');
-        const userColl = db.collection('users');
-        //Todo post users data in users coll;
-        app.post('/users', async (req, res) => {
-            const result = await userColl.insertOne(req.body);
+        const carsColl = db.collection('cars');
+        //Todo post cars data in carsColl;
+        app.post('/cars', async (req, res) => {
+            const result = await carsColl.insertOne(req.body);
+            res.send(result);
+        });
+        //Todo get cars data in carsColl;
+        app.get('/cars', async (req, res) => {
+            const result = await carsColl.find().toArray()
             res.send(result);
         });
         //Todo root apis;
