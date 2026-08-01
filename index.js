@@ -29,6 +29,14 @@ async function run() {
             const datas = await addToCartColl.find().toArray();
             res.send(datas)
         })
+        //? Remove AddToCartData in db.
+        app.delete('/addToCartsData/:id',async(req,res)=>{
+            const id = req.params.id;
+            // console.log('id',id);
+            const query = {carId:new ObjectId(id)};
+            const result = await addToCartColl.deleteOne(query);
+            res.send(result)
+        })
 
         //Todo post cars data in carsColl;
         app.post('/cars', async (req, res) => {
