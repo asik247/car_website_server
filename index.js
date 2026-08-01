@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,31 +16,41 @@ async function run() {
         //Todo my db and db coll;
         const db = client.db('carWebsite');
         const carsColl = db.collection('cars');
+        const addToCartColl = db.collection('addToCartsData');
+        
+        //Todo post addToCarts Data in addToCartColl.
+        app.post('/addToCartsData',async(req,res)=>{
+            const addToCartsInfo = req.body;
+            const result = await addToCartColl.insertOne(addToCartsInfo)
+            res.send(result)
+        })
+        //? Get AddToCartColl data in db;
+        app.get('/addToCartsData',async(req,res)=>{
+            const datas = await addToCartColl.find().toArray();
+            res.send(datas)
+        })
+
         //Todo post cars data in carsColl;
         app.post('/cars', async (req, res) => {
             const result = await carsColl.insertOne(req.body);
             res.send(result);
         });
         //Todo get cars data in carsColl;
-        // app.get('/cars', async (req, res) => {
-        //     const catagory = req.query.category;
-        //     console.log(catagory);
-        //     const result = await carsColl.find().limit(3).sort({price: -1}).toArray()
-        //     res.send(result);
-        // });
+        app.get('/cars/details/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id:new ObjectId(id)};
+            const result = await carsColl.findOne(query)
+            res.send(result);
+        });
         app.get('/cars', async (req, res) => {
             const category = req.query.category;
-            console.log(category);
-
             let query = {};
-
             if (category) {
                 query.category = {
                     $regex: category,
                     $options: 'i'
                 };
             }
-
             const result = await carsColl
                 .find(query)
                 .sort({ price: -1 })
