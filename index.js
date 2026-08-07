@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config()
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const port = process.env.PORT || 3000;
 //Todo middleware;
@@ -17,23 +18,23 @@ async function run() {
         const db = client.db('carWebsite');
         const carsColl = db.collection('cars');
         const addToCartColl = db.collection('addToCartsData');
-        
+
         //Todo post addToCarts Data in addToCartColl.
-        app.post('/addToCartsData',async(req,res)=>{
+        app.post('/addToCartsData', async (req, res) => {
             const addToCartsInfo = req.body;
             const result = await addToCartColl.insertOne(addToCartsInfo)
             res.send(result)
         })
         //? Get AddToCartColl data in db;
-        app.get('/addToCartsData',async(req,res)=>{
+        app.get('/addToCartsData', async (req, res) => {
             const datas = await addToCartColl.find().toArray();
             res.send(datas)
         })
         //? Remove AddToCartData in db.
-        app.delete('/addToCartsData/:id',async(req,res)=>{
+        app.delete('/addToCartsData/:id', async (req, res) => {
             const id = req.params.id;
             // console.log('id',id);
-            const query = {carId:new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
             const result = await addToCartColl.deleteOne(query);
             res.send(result)
         })
@@ -46,7 +47,7 @@ async function run() {
         //Todo get cars data in carsColl;
         app.get('/cars/details/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id:new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
             const result = await carsColl.findOne(query)
             res.send(result);
         });
@@ -71,6 +72,16 @@ async function run() {
         app.get('/', (req, res) => {
             res.send('Car website running...');
         });
+        //Todo Stripe Checkedout session code start here.
+        app.post("/create-checkout-session", async (req, res) => {
+            const session = await stripe.checkout.sessions.create({
+
+               
+                return_url: `${YOUR_DOMAIN}/complete?session_id={CHECKOUT_SESSION_ID}`,
+            
+            });
+            res.send(session)
+        })
         //Todo ping message;
         console.log('✅ MongoDB Connected');
     } catch (error) {
