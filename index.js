@@ -72,16 +72,47 @@ async function run() {
         app.get('/', (req, res) => {
             res.send('Car website running...');
         });
-        //Todo Stripe Checkedout session code start here.
+        //Todo Stripe Checkedout session code start heres.
         app.post("/create-checkout-session", async (req, res) => {
-            const session = await stripe.checkout.sessions.create({
+            try {
+                const data = req.body;
 
-               
-                return_url: `${YOUR_DOMAIN}/complete?session_id={CHECKOUT_SESSION_ID}`,
-            
-            });
-            res.send(session)
-        })
+                const session = await stripe.checkout.sessions.create({
+                    payment_method_types: ["card"],
+
+                    line_items: [
+                        {
+                            price_data: {
+                                currency: "usd",
+                                product_data: {
+                                    name: data.carName,
+                                },
+                                unit_amount: Math.round(data.price * 100),
+                            },
+                            quantity: 1,
+                        },
+                    ],
+
+                    mode: "payment",
+
+                    success_url:
+                        `${process.env.YOUR_DOMAIN}/complete?session_id={CHECKOUT_SESSION_ID}`,
+
+                    cancel_url:
+                        `${process.env.YOUR_DOMAIN}/cancel`,
+                });
+
+                res.send({
+                    url: session.url,
+                });
+
+            } catch (error) {
+                console.log(error);
+                res.status(500).send({
+                    error: error.message,
+                });
+            }
+        });
         //Todo ping message;
         console.log('✅ MongoDB Connected');
     } catch (error) {
