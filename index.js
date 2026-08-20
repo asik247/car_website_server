@@ -73,46 +73,37 @@ async function run() {
             res.send('Car website running...');
         });
         //Todo Stripe Checkedout session code start heres.
-        app.post("/create-checkout-session", async (req, res) => {
-            try {
-                const data = req.body;
+       app.post("/create-checkout-session", async (req, res) => {
+    try {
+        const { items } = req.body; // array of cart items
 
-                const session = await stripe.checkout.sessions.create({
-                    payment_method_types: ["card"],
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).send({ error: "No items provided for checkout." });
+        }
 
-                    line_items: [
-                        {
-                            price_data: {
-                                currency: "usd",
-                                product_data: {
-                                    name: data.carName,
-                                },
-                                unit_amount: Math.round(data.price * 100),
-                            },
-                            quantity: 1,
-                        },
-                    ],
+        const line_items = items.map((item) => ({
+            price_data: {
+                currency: "usd",
+                product_data: { name: item.carName },
+                unit_amount: Math.round(item.price * 100),
+            },
+            quantity: item.quantity || 1,
+        }));
 
-                    mode: "payment",
-
-                    success_url:
-                        `${process.env.YOUR_DOMAIN}/complete?session_id={CHECKOUT_SESSION_ID}`,
-
-                    cancel_url:
-                        `${process.env.YOUR_DOMAIN}/cancel`,
-                });
-
-                res.send({
-                    url: session.url,
-                });
-
-            } catch (error) {
-                console.log(error);
-                res.status(500).send({
-                    error: error.message,
-                });
-            }
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            line_items,
+            mode: "payment",
+            success_url: `${process.env.YOUR_DOMAIN}/complete?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.YOUR_DOMAIN}/cancel`,
         });
+
+        res.send({ url: session.url });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ error: error.message });
+    }
+});
         //Todo ping message;
         console.log('✅ MongoDB Connected');
     } catch (error) {
