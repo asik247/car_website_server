@@ -75,7 +75,7 @@ async function run() {
         //Todo Stripe Checkedout session code start heres.
        app.post("/create-checkout-session", async (req, res) => {
     try {
-        const { items } = req.body; // array of cart items
+        const { items } = req.body; // array of cart itemss
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).send({ error: "No items provided for checkout." });
