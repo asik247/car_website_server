@@ -33,7 +33,7 @@ async function run() {
         //? Remove AddToCartData in db.
         app.delete('/addToCartsData/:id', async (req, res) => {
             const id = req.params.id;
-            // console.log('id',idss);
+            // console.log('id',idssss);
             const query = { _id: new ObjectId(id) };
             const result = await addToCartColl.deleteOne(query);
             res.send(result)
