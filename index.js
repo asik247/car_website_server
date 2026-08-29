@@ -14,7 +14,7 @@ const client = new MongoClient(process.env.MONGO_URI);
 async function run() {
     try {
         await client.connect();
-        //Todo my db and db coll;
+        //Todo my db and db colls;
         const db = client.db('carWebsite');
         const carsColl = db.collection('cars');
         const addToCartColl = db.collection('addToCartsData');
