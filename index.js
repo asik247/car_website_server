@@ -25,6 +25,16 @@ async function run() {
             const result = await addToCartColl.insertOne(addToCartsInfo)
             res.send(result)
         })
+        //! Get AllCars data in db;
+        app.get('/allCars',async(req,res)=>{
+            const allCarsData = await carsColl.find().toArray();
+            res.send(allCarsData);
+        })
+
+
+
+
+
         //? Get AddToCartColl data in dbs;
         app.get('/addToCartsData', async (req, res) => {
             const datas = await addToCartColl.find().toArray();
