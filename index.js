@@ -27,7 +27,7 @@ async function run() {
         })
         //! Get AllCars data in db;
         app.get('/allCars',async(req,res)=>{
-            const allCarsData = await carsColl.find().toArray();
+            const allCarsData = await carsColl.find().limit(10).toArray();
             res.send(allCarsData);
         })
 
