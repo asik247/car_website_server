@@ -21,8 +21,16 @@ const verifyTokenWithFirebase = async (req, res, next) => {
     if(!token){
         return res.status(401).send({message:'Unauthorized access'})
     }
+    try{
+        const decoded = await getAuth().verifyIdToken(token);
+        req.decoded = decoded.email;
+        next();
+    }catch(err){
+        return res.status(401).send({message:"Invalid Token"})
+    }
 
-    next()
+
+    // next()
 }
 //Todo mongodb client;
 //?Firebase Admin sdk code here.
@@ -64,6 +72,7 @@ async function run() {
             const allCarsData = await carsColl.find().limit(10).toArray();
             // console.log(req.headers.authorization);
             // console.log(res);
+            // console.log(req.decoded);
             res.send(allCarsData);
             
         })
