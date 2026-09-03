@@ -26,8 +26,9 @@ async function run() {
             res.send(result)
         })
         //! Get AllCars data in db;
-        app.get('/allCars',async(req,res)=>{
+        app.get('/allCars', async (req, res) => {
             const allCarsData = await carsColl.find().limit(10).toArray();
+            console.log(req?.headers?.Authorization);
             res.send(allCarsData);
         })
 
@@ -38,6 +39,7 @@ async function run() {
         //? Get AddToCartColl data in dbs;
         app.get('/addToCartsData', async (req, res) => {
             const datas = await addToCartColl.find().toArray();
+
             res.send(datas)
         })
         //? Remove AddToCartData in db.
@@ -83,37 +85,37 @@ async function run() {
             res.send('Car website running...');
         });
         //Todo Stripe Checkedout session code start heres.
-       app.post("/create-checkout-session", async (req, res) => {
-    try {
-        const { items } = req.body; // array of cart itemss
+        app.post("/create-checkout-session", async (req, res) => {
+            try {
+                const { items } = req.body; // array of cart itemss
 
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return res.status(400).send({ error: "No items provided for checkout." });
-        }
+                if (!items || !Array.isArray(items) || items.length === 0) {
+                    return res.status(400).send({ error: "No items provided for checkout." });
+                }
 
-        const line_items = items.map((item) => ({
-            price_data: {
-                currency: "usd",
-                product_data: { name: item.carName },
-                unit_amount: Math.round(item.price * 100),
-            },
-            quantity: item.quantity || 1,
-        }));
+                const line_items = items.map((item) => ({
+                    price_data: {
+                        currency: "usd",
+                        product_data: { name: item.carName },
+                        unit_amount: Math.round(item.price * 100),
+                    },
+                    quantity: item.quantity || 1,
+                }));
 
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items,
-            mode: "payment",
-            success_url: `${process.env.YOUR_DOMAIN}/complete?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.YOUR_DOMAIN}/cancel`,
+                const session = await stripe.checkout.sessions.create({
+                    payment_method_types: ["card"],
+                    line_items,
+                    mode: "payment",
+                    success_url: `${process.env.YOUR_DOMAIN}/complete?session_id={CHECKOUT_SESSION_ID}`,
+                    cancel_url: `${process.env.YOUR_DOMAIN}/cancel`,
+                });
+
+                res.send({ url: session.url });
+            } catch (error) {
+                console.log(error);
+                res.status(500).send({ error: error.message });
+            }
         });
-
-        res.send({ url: session.url });
-    } catch (error) {
-        console.log(error);
-        res.status(500).send({ error: error.message });
-    }
-});
         //Todo ping message;
         console.log('✅ MongoDB Connected');
     } catch (error) {
