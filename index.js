@@ -8,7 +8,41 @@ const port = process.env.PORT || 3000;
 //Todo middleware;
 app.use(cors());
 app.use(express.json());
+//! Firebase Token Verify code here.
+const verifyTokenWithFirebase = async (req, res, next) => {
+    // console.log(req.headers.authorization);
+    const authHeader = req.headers.authorization;
+    // console.log(author);
+    if (!authHeader) {
+        return res.status(401).send({ message: "Unauthorized" });
+    }
+    const token = authHeader.split(" ")[1];
+    // console.log('token',token);
+    if(!token){
+        return res.status(401).send({message:'Unauthorized access'})
+    }
+
+    next()
+}
 //Todo mongodb client;
+//?Firebase Admin sdk code here.
+// var admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
+// console.log(admin);
+// console.log(admin.credential);
+
+var serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+}
+// console.log(serviceAccount);
+
+initializeApp({
+    credential: cert(serviceAccount)
+});
+
 const client = new MongoClient(process.env.MONGO_URI);
 //Todo main funk;
 async function run() {
@@ -26,10 +60,12 @@ async function run() {
             res.send(result)
         })
         //! Get AllCars data in db;
-        app.get('/allCars', async (req, res) => {
+        app.get('/allCars', verifyTokenWithFirebase, async (req, res) => {
             const allCarsData = await carsColl.find().limit(10).toArray();
-            console.log(req?.headers?.Authorization);
+            // console.log(req.headers.authorization);
+            // console.log(res);
             res.send(allCarsData);
+            
         })
 
 
